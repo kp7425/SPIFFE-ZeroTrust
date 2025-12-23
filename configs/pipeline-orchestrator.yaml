@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pipeline-orchestrator-sa
+  namespace: spiffe-research
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipeline-orchestrator
+  namespace: spiffe-research
+  labels:
+    app: pipeline-orchestrator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pipeline-orchestrator
+  template:
+    metadata:
+      labels:
+        app: pipeline-orchestrator
+    spec:
+      serviceAccountName: pipeline-orchestrator-sa
+      containers:
+      - name: pipeline-orchestrator
+        image: python:3.11-slim
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            apt-get update && apt-get install -y curl
+            pip install spiffe requests cryptography --no-cache-dir
+            cd /app && python3 pipeline_orchestrator.py
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        - name: spire-agent-socket
+          mountPath: /opt/spire/sockets
+          readOnly: true
+        env:
+        - name: SPIFFE_ENDPOINT_SOCKET
+          value: "unix:///opt/spire/sockets/agent.sock"
+        - name: THREAT_CLASSIFIER_URL
+          value: "https://threat-classifier-svc:8443"  # ← Changed to https://
+        - name: CONFIDENCE_SCORER_URL
+          value: "https://confidence-scorer-svc:8444"  # ← Changed to https://
+        - name: THREAT_VALIDATOR_URL
+          value: "https://threat-validator-svc:8445"   # ← Changed to https://
+        - name: GATEWAY_URL
+          value: "https://lm-studio-gateway-svc:8446"  # ← Changed to https:// for mTLS
+        ports:
+        - containerPort: 8080
+      volumes:
+      - name: app-code
+        configMap:
+          name: ai-agents-code
+      - name: spire-agent-socket
+        hostPath:
+          path: /opt/spire/sockets
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipeline-orchestrator-svc
+  namespace: spiffe-research
+spec:
+  selector:
+    app: pipeline-orchestrator
+  ports:
+  - port: 8080
+    targetPort: 8080

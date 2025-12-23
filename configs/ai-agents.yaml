@@ -1,0 +1,201 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: threat-classifier-sa
+  namespace: spiffe-research
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: confidence-scorer-sa
+  namespace: spiffe-research
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: threat-validator-sa
+  namespace: spiffe-research
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: threat-classifier
+  namespace: spiffe-research
+  labels:
+    app: threat-classifier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: threat-classifier
+  template:
+    metadata:
+      labels:
+        app: threat-classifier
+    spec:
+      serviceAccountName: threat-classifier-sa
+      containers:
+      - name: threat-classifier
+        image: python:3.11-slim
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            apt-get update && apt-get install -y curl
+            pip install spiffe requests cryptography --no-cache-dir
+            cd /app && python3 threat_classifier.py
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        - name: spire-agent-socket
+          mountPath: /opt/spire/sockets
+          readOnly: true
+        env:
+        - name: SPIFFE_ENDPOINT_SOCKET
+          value: "unix:///opt/spire/sockets/agent.sock"
+        - name: GATEWAY_URL
+          value: "https://lm-studio-gateway-svc:8446" 
+        ports:
+        - containerPort: 8443
+      volumes:
+      - name: app-code
+        configMap:
+          name: ai-agents-code
+      - name: spire-agent-socket
+        hostPath:
+          path: /opt/spire/sockets
+          type: DirectoryOrCreate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: confidence-scorer
+  namespace: spiffe-research
+  labels:
+    app: confidence-scorer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: confidence-scorer
+  template:
+    metadata:
+      labels:
+        app: confidence-scorer
+    spec:
+      serviceAccountName: confidence-scorer-sa
+      containers:
+      - name: confidence-scorer
+        image: python:3.11-slim
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            apt-get update && apt-get install -y curl
+            pip install spiffe requests cryptography --no-cache-dir
+            cd /app && python3 confidence_scorer.py
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        - name: spire-agent-socket
+          mountPath: /opt/spire/sockets
+          readOnly: true
+        env:
+        - name: SPIFFE_ENDPOINT_SOCKET
+          value: "unix:///opt/spire/sockets/agent.sock"
+        - name: GATEWAY_URL
+          value: "https://lm-studio-gateway-svc:8446"
+
+        ports:
+        - containerPort: 8444
+      volumes:
+      - name: app-code
+        configMap:
+          name: ai-agents-code
+      - name: spire-agent-socket
+        hostPath:
+          path: /opt/spire/sockets
+          type: DirectoryOrCreate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: threat-validator
+  namespace: spiffe-research
+  labels:
+    app: threat-validator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: threat-validator
+  template:
+    metadata:
+      labels:
+        app: threat-validator
+    spec:
+      serviceAccountName: threat-validator-sa
+      containers:
+      - name: threat-validator
+        image: python:3.11-slim
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            apt-get update && apt-get install -y curl
+            pip install spiffe requests cryptography --no-cache-dir
+            cd /app && python3 threat_validator.py
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        - name: spire-agent-socket
+          mountPath: /opt/spire/sockets
+          readOnly: true
+        env:
+        - name: SPIFFE_ENDPOINT_SOCKET
+          value: "unix:///opt/spire/sockets/agent.sock"
+        - name: GATEWAY_URL
+          value: "https://lm-studio-gateway-svc:8446" 
+        ports:
+        - containerPort: 8445
+      volumes:
+      - name: app-code
+        configMap:
+          name: ai-agents-code
+      - name: spire-agent-socket
+        hostPath:
+          path: /opt/spire/sockets
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: threat-classifier-svc
+  namespace: spiffe-research
+spec:
+  selector:
+    app: threat-classifier
+  ports:
+  - port: 8443
+    targetPort: 8443
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: confidence-scorer-svc
+  namespace: spiffe-research
+spec:
+  selector:
+    app: confidence-scorer
+  ports:
+  - port: 8444
+    targetPort: 8444
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: threat-validator-svc
+  namespace: spiffe-research
+spec:
+  selector:
+    app: threat-validator
+  ports:
+  - port: 8445
+    targetPort: 8445

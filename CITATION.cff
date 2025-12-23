@@ -1,0 +1,42 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, please cite it as below."
+title: "SPIFFE-Based Zero-Trust Authentication for AI Agent Ecosystems"
+type: software
+authors:
+  - family-names: Pappu
+    given-names: Karthik
+    email: karthik.pappu@trojans.dsu.edu
+    affiliation: "Dakota State University"
+    orcid: "https://orcid.org/0009-0000-5335-6279"
+  - family-names: Bhushan
+    given-names: Badal
+    email: badalbhushan786@gmail.com
+    affiliation: "Independent Researcher"
+    orcid: "https://orcid.org/0009-0006-6102-7591"
+  - family-names: Mittal
+    given-names: Akshay
+    email: akshay.mittal@ieee.org
+    affiliation: "University of Cumberlands"
+    orcid: "https://orcid.org/0009-0008-5233-9248"
+repository-code: "https://github.com/karthikpappu/spiffe-ai-auth-test"
+keywords:
+  - SPIFFE
+  - SPIRE
+  - zero-trust
+  - mutual-TLS
+  - AI agents
+  - authentication
+  - PKI
+  - Kubernetes
+  - cryptographic-identity
+  - certificate-rotation
+license: "Research and Educational Use"
+version: 1.0.0
+date-released: "2024-12-14"
+abstract: >
+  Reference implementation of SPIFFE-based zero-trust authentication
+  for AI agent ecosystems. Demonstrates complete elimination of static
+  API keys through X.509-SVID certificates with automatic rotation and
+  mutual TLS (mTLS). Includes multi-agent threat assessment pipeline
+  with cryptographic workload identity, achieving zero-downtime
+  certificate rotation and full bidirectional authentication.

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lm-studio-gateway
+  namespace: spiffe-research
+  labels:
+    app: lm-studio-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lm-studio-gateway
+  template:
+    metadata:
+      labels:
+        app: lm-studio-gateway
+    spec:
+      serviceAccountName: lm-studio-gateway-sa
+      containers:
+      - name: lm-studio-gateway
+        image: lm-studio-gateway:latest
+        imagePullPolicy: Never  # For local Docker Desktop images
+        ports:
+        - containerPort: 8446
+          name: https  # ← Changed from "http" to "https"
+        env:
+        - name: LM_STUDIO_HOST
+          value: "host.docker.internal"  # Docker Desktop special DNS
+        - name: LM_STUDIO_PORT
+          value: "1234"
+        - name: SPIFFE_ENDPOINT_SOCKET
+          value: "unix:///opt/spire/sockets/agent.sock"
+        volumeMounts:
+        - name: spire-agent-socket
+          mountPath: /opt/spire/sockets
+          readOnly: true
+        livenessProbe:
+          tcpSocket:  # ← Changed from httpGet to tcpSocket
+            port: 8446
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:  # ← Changed from httpGet to tcpSocket
+            port: 8446
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: spire-agent-socket
+        hostPath:
+          path: /opt/spire/sockets  # SPIRE agent socket on host
+          type: DirectoryOrCreate

@@ -1,0 +1,21 @@
+# SPIFFE-Based Zero-Trust Authentication for AI Agents
+# Python Dependencies
+
+# SPIFFE/SPIRE Integration
+pyspiffe==0.7.2
+
+# Web Framework
+flask==3.0.0
+werkzeug==3.0.1
+
+# HTTP Client
+requests==2.31.0
+
+# Google Generative AI (Gemini)
+google-generativeai==0.3.2
+
+# Logging and Utilities
+python-json-logger==2.0.7
+
+# Security
+cryptography==41.0.7

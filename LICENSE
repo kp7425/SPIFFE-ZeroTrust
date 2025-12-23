@@ -1,0 +1,51 @@
+SPIFFE-Based Zero-Trust Authentication for AI Agent Ecosystems
+================================================================
+
+Copyright (c) 2024 Karthik Pappu, Badal Bhushan, Akshay Mittal
+
+ACADEMIC AND RESEARCH LICENSE
+
+Permission is hereby granted, free of charge, to any person or organization
+obtaining a copy of this software and associated documentation files (the
+"Software"), to use, copy, modify, and distribute the Software for
+NON-COMMERCIAL RESEARCH AND EDUCATIONAL PURPOSES ONLY, subject to the
+following conditions:
+
+1. ATTRIBUTION REQUIREMENT
+   The above copyright notice and this permission notice shall be included
+   in all copies or substantial portions of the Software. Any use of this
+   Software in academic publications, presentations, or derivative works
+   must cite the following paper:
+
+   Karthik Pappu, Badal Bhushan, Akshay Mittal. "SPIFFE-Based Zero-Trust
+   Authentication for AI Agent Ecosystems." IEEE Conference Proceedings, 2024.
+
+2. NON-COMMERCIAL USE
+   This license is granted strictly for non-commercial research and
+   educational purposes. Commercial use, including but not limited to
+   incorporation into commercial products or services, requires explicit
+   written permission from the copyright holders.
+
+3. MODIFICATIONS
+   Derivative works must be clearly marked as modified versions and must
+   not be misrepresented as the original Software. All modifications must
+   be documented and made available under the same license terms.
+
+4. NO WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
+
+5. TERMINATION
+   This license automatically terminates if you fail to comply with any of
+   the terms and conditions. Upon termination, you must destroy all copies
+   of the Software in your possession.
+
+For commercial licensing inquiries, please contact:
+- Karthik Pappu: karthik.pappu@trojans.dsu.edu
+- Badal Bhushan: badalbhushan786@gmail.com
+- Akshay Mittal: akshay.mittal@ieee.org

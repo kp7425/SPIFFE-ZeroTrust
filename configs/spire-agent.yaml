@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spire-agent
+  namespace: spiffe-research
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: spire-agent-cluster-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "nodes", "nodes/proxy"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: spire-agent-cluster-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: spire-agent-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: spire-agent
+  namespace: spiffe-research
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spire-agent-config
+  namespace: spiffe-research
+data:
+  agent.conf: |
+    agent {
+      data_dir = "/run/spire"
+      log_level = "DEBUG"
+      server_address = "spire-server"
+      server_port = "8081"
+      socket_path = "/opt/spire/sockets/agent.sock"
+      trust_domain = "research.example.org"
+      insecure_bootstrap = true
+    }
+
+    plugins {
+      NodeAttestor "k8s_psat" {
+        plugin_data {
+          cluster = "demo-cluster"
+        }
+      }
+
+      KeyManager "memory" {
+        plugin_data {
+        }
+      }
+
+      WorkloadAttestor "k8s" {
+        plugin_data {
+          skip_kubelet_verification = true
+        }
+      }
+
+      # REMOVED unix WorkloadAttestor - it doesn't work without hostPID
+    }
+
+    health_checks {
+      listener_enabled = true
+      bind_address = "0.0.0.0"
+      bind_port = "8080"
+      live_path = "/live"
+      ready_path = "/ready"
+    }
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: spire-agent
+  namespace: spiffe-research
+  labels:
+    app: spire-agent
+spec:
+  selector:
+    matchLabels:
+      app: spire-agent
+  template:
+    metadata:
+      labels:
+        app: spire-agent
+    spec:
+      hostPID: true     # PUT THIS BACK
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      serviceAccountName: spire-agent
+      containers:
+      - name: spire-agent
+        image: ghcr.io/spiffe/spire-agent:1.8.5
+        args:
+        - -config
+        - /run/spire/config/agent.conf
+        volumeMounts:
+        - name: spire-config
+          mountPath: /run/spire/config
+          readOnly: true
+        - name: spire-bundle
+          mountPath: /run/spire/bundle
+        - name: spire-agent-socket
+          mountPath: /opt/spire/sockets
+        - name: spire-token
+          mountPath: /var/run/secrets/tokens
+        - name: cgroup                    # ADD THIS
+          mountPath: /sys/fs/cgroup       # ADD THIS
+          readOnly: true                  # ADD THIS
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      volumes:
+      - name: spire-config
+        configMap:
+          name: spire-agent-config
+      - name: spire-bundle
+        emptyDir: {}
+      - name: spire-agent-socket
+        hostPath:
+          path: /opt/spire/sockets
+          type: DirectoryOrCreate
+      - name: spire-token
+        projected:
+          sources:
+          - serviceAccountToken:
+              path: spire-agent
+              expirationSeconds: 7200
+              audience: spire-server
+      - name: cgroup                      # ADD THIS
+        hostPath:                         # ADD THIS
+          path: /sys/fs/cgroup           # ADD THIS
+          type: Directory                 # ADD THIS

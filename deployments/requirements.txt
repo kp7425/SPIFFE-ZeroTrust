@@ -1,0 +1,4 @@
+flask==3.1.0
+requests==2.32.3
+spiffe==0.2.2
+cryptography
