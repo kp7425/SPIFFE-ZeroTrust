@@ -430,8 +430,8 @@ python3 scripts/collect-evidence.py
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/karthikpappu/spiffe-ai-auth-test.git
-cd spiffe-ai-auth-test
+git clone https://github.com/kp7425/SPIFFE-ZeroTrust.git
+
 
 # 2. Deploy SPIRE infrastructure
 ./scripts/deploy-spire.sh
